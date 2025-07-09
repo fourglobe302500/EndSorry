@@ -1,0 +1,10 @@
+name = "EndSorry"
+version = "0.1.0"
+defaultTargets = ["endsorry"]
+
+[[lean_lib]]
+name = "EndSorry"
+
+[[lean_exe]]
+name = "endsorry"
+root = "Main"
