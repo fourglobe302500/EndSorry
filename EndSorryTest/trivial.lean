@@ -1,7 +1,7 @@
 import EndSorry
 
 -- set_option pp.all true
-set_option autoImplicit false
+-- set_option autoImplicit true
 
 theorem reflection {α : Type} (a : α) : a = a := by
   -- rfl
@@ -32,20 +32,25 @@ theorem a_b_true {α β : Type} : α → β → True := by
   -- apply True.intro
   sorry?
 
-theorem a_b_then_a {β : Type} {α : Prop} : α → β → α := by
+theorem a_b_then_a {α : Prop} : α → β → α := by
   -- intro a
   -- intro b
   -- exact a
   sorry?
 
-theorem a_b_then_b {α : Type} {β : Prop} : α → β → β := by
+theorem a_b_then_b {β : Prop} : α → β → β := by
   -- intro a
   -- intro b
   -- exact b
   sorry?
 
-theorem a_a : ∃ α, α  → True := by
+theorem test : ∃ n : Nat, n = 0 := by
+  -- constructor
+  -- rfl
   sorry?
 
 theorem a_b : ∀ α, α  → True := by
+--   intro α
+--   intro b
+--   apply True.intro
   sorry?
