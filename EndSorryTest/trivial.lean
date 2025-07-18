@@ -7,74 +7,74 @@ set_option pp.raw true
 set_option pp.raw.maxDepth 10
 
 theorem reflection {α : Type} (a : α) : a = a := by
-  rfl
-  -- sorry?
+  -- rfl
+  sorry?
 
 theorem true : True := by
-  apply True.intro
-  -- sorry?
+  -- apply True.intro
+  sorry?
 
 theorem false : ¬False := by
-  intro a
-  exact a
-  -- sorry?
+  -- intro a
+  -- exact a
+  sorry?
 
 theorem a_true {α : Type} : α → True := by
-  intro a
-  apply True.intro
-  -- sorry?
+  -- intro a
+  -- apply True.intro
+  sorry?
 
 theorem a_then_a {α : Prop} : α → α := by
-  intro a
-  exact a
-  -- sorry?
+  -- intro a
+  -- exact a
+  sorry?
 
 theorem direct {α : Prop} (h : α) : α := by
-  exact h
-  -- sorry?
+  -- exact h
+  sorry?
 
 theorem a_b_true {α β : Type} : α → β → True := by
-  intro a
-  intro b
-  apply True.intro
-  -- sorry?
+  -- intro a
+  -- intro b
+  -- apply True.intro
+  sorry?
 
 theorem a_b_then_a {α : Prop} : α → β → α := by
-  intro a
-  intro b
-  exact a
-  -- sorry?
+  -- intro a
+  -- intro b
+  -- exact a
+  sorry?
 
 theorem a_b_then_b {β : Prop} : α → β → β := by
-  intro a
-  intro b
-  exact b
-  -- sorry?
+  -- intro a
+  -- intro b
+  -- exact b
+  sorry?
 
 theorem test : ∃ n : Nat, n = 0 := by
-  constructor
-  rfl
-  -- sorry?
+  -- constructor
+  -- rfl
+  sorry?
 
 theorem a_b : ∀ α, α  → True := by
-  intro α
-  intro b
-  apply True.intro
-  -- sorry?
+  -- intro α
+  -- intro b
+  -- apply True.intro
+  sorry?
 
 theorem a_and_b : a → b → a ∧ b := by
-  intro a
-  intro b
-  constructor
-  exact a
-  exact b
-  -- sorry?
+  -- intro a
+  -- intro b
+  -- constructor
+  -- exact a
+  -- exact b
+  sorry?
 
 theorem a_and_b_given (ha : a) (hb: b) : a ∧ b := by
-  constructor
-  exact ha
-  exact hb
-  -- sorry?
+  -- constructor
+  -- exact ha
+  -- exact hb
+  sorry?
 
 theorem a_and_b_then_a {α β : Prop} : α ∧ β → α := by
   -- intro a
@@ -86,4 +86,34 @@ theorem a_and_b_and_c_then_c {α β χ : Prop} : α ∧ β ∧ χ → χ := by
   -- intro a
   -- rcases a with ⟨b, c⟩
   -- exact b
+  sorry?
+
+theorem a_and_b_then_c_and_d_then_a_and_c {α β χ δ : Prop} :
+  (α ∧ β) → (χ ∧ δ) → (α ∧ χ) := by
+  -- intro a
+  -- intro b
+  -- constructor
+  -- rcases a with ⟨c, d⟩
+  -- exact c
+  -- rcases b with ⟨e, f⟩
+  -- exact e
+  sorry?
+
+theorem a_and_b_then_a_or_b {α β : Prop} : α ∧ β → α ∨ β := by
+  -- intro a
+  -- constructor
+  -- rcases a with ⟨b, c⟩
+  -- exact b
+  sorry?
+
+theorem a_then_a_or_b {α β : Prop} : α → α ∨ β := by
+  -- intro a
+  -- constructor
+  -- exact a
+  sorry?
+
+theorem a_then_b_or_a {α β : Prop} : α → β ∨ α := by
+  -- intro a
+  -- constructor
+  -- exact a
   sorry?

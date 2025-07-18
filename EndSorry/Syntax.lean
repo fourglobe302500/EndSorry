@@ -26,10 +26,13 @@ def Lean.Expr.matchArrow? (e : Expr): Option (Expr × Expr) :=
     else (a, b)
   | _ => none
 
-set_option autoImplicit false
-
 def finished : TacticM Bool := do
   return (← getUnsolvedGoals).length == 0
+
+def Lean.LocalContext.firstMapM? [Monad m] (lctx: LocalContext) (f : LocalDecl → m (Option α)) : m (Option α) :=
+  lctx.foldlM (init := none) fun acc decl => match acc with
+    | some _ => return acc
+    | none => f decl
 
 def handleDefault (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
   let type ← goal.getType
@@ -44,35 +47,34 @@ def handleDefault (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
         else return none
   if let some (e, userName) := option_matching_expression then
     closeMainGoal `endSorry e
+    -- logInfo m!"exact {userName}"
     return (s!"exact {userName}", n)
 
   if let some (_a, _b) := type.matchArrow? then
-    -- logInfo m!"arrow {a} {b}"
     let (n, name) := getName n
     let (_v, newGoal) ← goal.intro name.toName
     replaceMainGoal [newGoal]
+    -- logInfo m!"intro {name}"
     return (s!"intro {name}", n)
   else if type.isForall then
     let (res, n) ← forallBoundedTelescope type (some 1) (fun _fvars _body => do
-      -- logInfo m!"forall {fvars} {body}"
       let (n, name) := getName n
       let (_v, newGoal) ← goal.intro name.toName
       replaceMainGoal [newGoal]
+      -- logInfo m!"intro {name}"
       return (s!"intro {name}", n))
     return (res, n)
   else if let some (_, p) := type.app2? ``Exists then
     let res ← lambdaBoundedTelescope p 1 (fun _fvars _body => do
-      -- logInfo m!"exists {fvars} {body}"
       let newGoals ← goal.constructor
       replaceMainGoal newGoals
-      -- logInfo m!"{newGoals}"
+      -- logInfo m!"constructor"
       return s!"constructor")
     return (res, n)
 
-  let (nn, s) ← ctx.foldrM (init := (n, [])) fun decl (n, s) => do
-    if decl.isImplementationDetail then return (n, s)
+  let result ← ctx.firstMapM? (fun decl => do
+    if decl.isImplementationDetail then return none
     let declExpr := decl.toExpr
-    let _declType := decl.type
     let declName := decl.userName
     match ← inferTypeQ declExpr with
     | ⟨0, ~q($a ∧ $b), declq⟩ =>
@@ -86,20 +88,17 @@ def handleDefault (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
           { userName := nb.toName, type := ← inferType eb, value := eb }]
       let goal ← goal.clear decl.fvarId
       replaceMainGoal [goal]
-      return (n, s!"rcases {declName} with ⟨{na}, {nb}⟩"::s)
-    | _ => return (n, s)
+      -- logInfo m!"rcases {declName} with ⟨{na}, {nb}⟩"
+      return some (s!"rcases {declName} with ⟨{na}, {nb}⟩", n)
+    | _ => return none)
 
-  if nn != n then
-    let raw :=
-      match s with
-      | [] => ""
-      | head::tail =>
-        tail.foldl (init := head) (fun acc x => s!"{x}\n{acc}")
-    return (raw, nn)
 
-  Lean.logInfo m!"By default: {type}"
-  admitGoal goal
-  return (s!"sorry", n)
+  if let some (s, n) := result then
+    return (s, n)
+  else
+    -- Lean.logInfo m!"By default: {type}"
+    admitGoal goal
+    return (s!"sorry", n)
 
 def process (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
   let type ← goal.getType
@@ -114,7 +113,7 @@ def process (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
   | ⟨1, ~q(Prop), ~q($a ∧ $b) ⟩ =>
     let newGoals ← goal.constructor
     replaceMainGoal newGoals
-    -- logInfo m!"{newGoals}"
+    -- logInfo m!"constructor"
     return ("constructor", n)
   | ⟨1, ~q(Prop), ~q(True) ⟩ =>
     let intro := (.const `True.intro [])
@@ -125,7 +124,14 @@ def process (goal : MVarId) (n : Nat) : TacticM (String × Nat) := do
     let (n, name) := getName n
     let (_v, newGoal) ← goal.intro name.toName
     replaceMainGoal [newGoal]
+    -- logInfo m!"intro {name}"
     return (s!"intro {name}", n)
+  | ⟨1, ~q(Prop), ~q($a ∨ $b) ⟩ =>
+    -- logInfo m!"Or"
+    let newGoals ← goal.constructor
+    replaceMainGoal newGoals
+    -- logInfo m!"constructor"
+    return ("constructor", n)
   | ⟨1, ~q(Prop), _a⟩ =>
     handleDefault goal n
 
